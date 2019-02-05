@@ -5,6 +5,8 @@ authors = ["Richo Healey <richo@psych0tik.net>"]
 edition = "2018"
 description = "A small procedural macro to allow redacting sensitive information without losing the ease of use of deriving Debug"
 
+license = "MIT"
+
 [lib]
 proc-macro = true
 
