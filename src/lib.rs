@@ -3,7 +3,7 @@ extern crate proc_macro;
 use proc_macro2::{TokenStream, Ident};
 use quote::{quote, quote_spanned};
 use syn::spanned::Spanned;
-use syn::{parse_macro_input, parse_quote, Data, DeriveInput, Fields, GenericParam, Generics, Index};
+use syn::{parse_macro_input, Data, DeriveInput, Fields, Index};
 
 #[proc_macro_derive(RedactedDebug, attributes(redacted))]
 pub fn derive_redacted_debug(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
@@ -24,7 +24,7 @@ pub fn derive_redacted_debug(input: proc_macro::TokenStream) -> proc_macro::Toke
 
     let expanded = quote! {
         impl #impl_generics #trayt for #name #ty_generics #where_clause {
-            fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+            fn fmt(&self, f: &mut #formatter) -> ::std::fmt::Result {
                     #body
                     .finish()
             }
