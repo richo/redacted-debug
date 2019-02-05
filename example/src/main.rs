@@ -3,6 +3,7 @@ use redacted_debug::RedactedDebug;
 #[derive(RedactedDebug)]
 struct Demo<'a, T: ?Sized + std::fmt::Debug> {
     a: Box<T>,
+    #[redacted]
     b: u8,
     c: &'a str,
     d: String,
@@ -13,6 +14,7 @@ struct DemoTuple<'a, T: ?Sized + std::fmt::Debug>(
     Box<T>,
     u8,
     &'a str,
+    #[redacted]
     String,
 );
 
