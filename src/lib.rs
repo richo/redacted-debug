@@ -3,7 +3,7 @@ extern crate proc_macro;
 use proc_macro2::{TokenStream, Ident};
 use quote::{quote, quote_spanned};
 use syn::spanned::Spanned;
-use syn::{parse_macro_input, Data, DeriveInput, Fields, Index};
+use syn::{parse_macro_input, Data, DeriveInput, Fields, Variant, Index};
 
 #[proc_macro_derive(RedactedDebug, attributes(redacted))]
 pub fn derive_redacted_debug(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
@@ -26,7 +26,6 @@ pub fn derive_redacted_debug(input: proc_macro::TokenStream) -> proc_macro::Toke
         impl #impl_generics #trayt for #name #ty_generics #where_clause {
             fn fmt(&self, f: &mut #formatter) -> ::std::fmt::Result {
                     #body
-                    .finish()
             }
         }
     };
@@ -64,6 +63,7 @@ fn redacted_debug_body(name: &Ident, data: &Data) -> TokenStream {
                     quote! {
                         f.debug_struct(stringify!(#name))
                         #(#recurse)*
+                        .finish()
                     }
                 }
                 Fields::Unnamed(ref fields) => {
@@ -82,14 +82,75 @@ fn redacted_debug_body(name: &Ident, data: &Data) -> TokenStream {
                     quote! {
                         f.debug_tuple(stringify!(#name))
                         #(#recurse)*
+                        .finish()
                     }
                 }
                 Fields::Unit => {
-                    // What even does derive(Debug) do for unit structs?
-                    quote!(0)
+                    quote! {
+                        write!(f, stringify!(#name))
+                    }
                 }
             }
         }
-        Data::Enum(_) | Data::Union(_) => unimplemented!(),
+        Data::Enum(ref data) => {
+            let variants = data.variants.iter().map(|v| {
+                let name = &v.ident;
+                match v.fields {
+                Fields::Named(ref fields) => {
+                    let recurse = fields.named.iter().map(|f| {
+                        let name = &f.ident;
+                        if is_redacted(&f.attrs) {
+                            quote_spanned! {f.span()=>
+                                .field(stringify!(#name), &"\"...\"")
+                            }
+                        } else {
+                            quote_spanned! {f.span()=>
+                                .field(stringify!(#name), &self.#name)
+                            }
+                        }
+                    });
+                    quote! {
+                        f.debug_struct(stringify!(#name))
+                        #(#recurse)*
+                        .finish()
+                    }
+                }
+                Fields::Unnamed(ref fields) => {
+                    let recurse = fields.unnamed.iter().enumerate().map(|(i, f)| {
+                        let index = Index::from(i);
+                        if is_redacted(&f.attrs) {
+                            quote_spanned! {f.span()=>
+                                .field(&"\"...\"")
+                            }
+                        } else {
+                            quote_spanned! {f.span()=>
+                                .field(&self.#index)
+                            }
+                        }
+                    });
+                    quote! {
+                        #name => {
+                            f.debug_tuple(stringify!(#name))
+                                #(#recurse)*
+                                .finish()
+                        }
+                    }
+                }
+                Fields::Unit => {
+                    quote! {
+                        #name => {
+                            write!(f, stringify!(#name))
+                        }
+                    }
+                }
+            }
+            });
+            quote! {
+                match self {
+                    #(#variants,)*
+                }
+            }
+        }
+        Data::Union(_) => panic!("this trait cannot be derived for unions"),
     }
 }
