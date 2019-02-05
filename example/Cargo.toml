@@ -1,0 +1,9 @@
+[package]
+name = "sensitive_debug_example"
+version = "0.0.0"
+authors = ["richo butts <richo@psych0tik.net>"]
+edition = "2018"
+publish = false
+
+[dependencies]
+redacted_debug = { path = "../" }
