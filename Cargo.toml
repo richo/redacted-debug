@@ -3,6 +3,7 @@ name = "redacted_debug"
 version = "0.1.0"
 authors = ["Richo Healey <richo@psych0tik.net>"]
 edition = "2018"
+description = "A small procedural macro to allow redacting sensitive information without losing the ease of use of deriving Debug"
 
 [lib]
 proc-macro = true

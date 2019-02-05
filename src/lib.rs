@@ -7,7 +7,6 @@ use syn::{parse_macro_input, parse_quote, Data, DeriveInput, Fields, GenericPara
 
 #[proc_macro_derive(RedactedDebug, attributes(redacted))]
 pub fn derive_redacted_debug(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    // Parse the input tokens into a syntax tree.
     let input = parse_macro_input!(input as DeriveInput);
 
     let name = input.ident;
