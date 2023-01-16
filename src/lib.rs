@@ -3,7 +3,7 @@ extern crate proc_macro;
 use proc_macro2::{TokenStream, Ident};
 use quote::{quote, quote_spanned};
 use syn::spanned::Spanned;
-use syn::{parse_macro_input, Data, DeriveInput, Fields, Variant, Index};
+use syn::{parse_macro_input, Data, DeriveInput, Fields, Index};
 
 #[proc_macro_derive(RedactedDebug, attributes(redacted))]
 pub fn derive_redacted_debug(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
